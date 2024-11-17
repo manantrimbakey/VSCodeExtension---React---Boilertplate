@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { logger } from "./utils/logger";
 class WebviewManager {
 	private static instance: WebviewManager;
 	private panel: vscode.WebviewPanel | undefined;
@@ -57,7 +58,8 @@ class WebviewManager {
 
 		// Set initial HTML content
 		this.panel.webview.html = this.getWebviewContent(this.panel.webview);
-		this.panel.webview.postMessage({ command: "serverPort", serverPort: port });
+		logger.debug("Posting server port to webview", { port });
+		
 
 		// Handle messages from webview
 		this.panel.webview.onDidReceiveMessage((message) => {
@@ -65,6 +67,10 @@ class WebviewManager {
 				case "alert":
 					vscode.window.showInformationMessage(message.text);
 					return;
+				case "getServerPort": {
+					this.panel?.webview.postMessage({ command: "serverPort", serverPort: port });
+					break;
+				}
 				// Add more message handlers here
 			}
 		});
