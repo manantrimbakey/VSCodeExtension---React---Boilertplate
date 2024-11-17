@@ -10,6 +10,9 @@ app.use(cors()); // Enable CORS
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
+// Store the server instance
+let server: ReturnType<typeof app.listen>;
+
 // Basic route
 app.get("/", (req: Request, res: Response) => {
 	res.json({ message: "Server is running" });
@@ -27,10 +30,10 @@ const startServer = async (initialPort: number): Promise<number> => {
 
 	const tryPort = (port: number): Promise<boolean> => {
 		return new Promise((resolve) => {
-			const server = app
+			const testServer = app
 				.listen(port)
 				.once("listening", () => {
-					server.close();
+					testServer.close();
 					resolve(true);
 				})
 				.once("error", (err: any) => {
@@ -44,7 +47,7 @@ const startServer = async (initialPort: number): Promise<number> => {
 	while (true) {
 		const isPortAvailable = await tryPort(currentPort);
 		if (isPortAvailable) {
-			app.listen(currentPort, () => {
+			server = app.listen(currentPort, () => {
 				console.log(`Server is running on port ${currentPort}`);
 			});
 			break;
@@ -57,4 +60,22 @@ const startServer = async (initialPort: number): Promise<number> => {
 	return currentPort;
 };
 
-export { startServer };
+// Add shutdown function
+const shutdownServer = async (): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		if (!server) {
+			resolve();
+			return;
+		}
+
+		server.close((err) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+			resolve();
+		});
+	});
+};
+
+export { startServer, shutdownServer };

@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import WebviewManager from "./webView";
-import { startServer } from "./expressServer";
+import { startServer, shutdownServer } from "./expressServer";
 import { logger } from "./utils/logger";
 
 // This method is called when your extension is activated
@@ -39,4 +39,6 @@ export async function activate(context: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() {
 	logger.info("Extension is being deactivated");
+	// Kill the server
+	shutdownServer();
 }
