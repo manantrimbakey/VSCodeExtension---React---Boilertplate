@@ -3,31 +3,92 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
-	// Get path to dist folder
-	const distPathOnDisk = vscode.Uri.joinPath(extensionUri, 'dist', 'client');
-	
-	// Get path to index.html file from dist folder
-	const htmlPathOnDisk = vscode.Uri.joinPath(distPathOnDisk, 'index.html');
-	const cssPathOnDisk = vscode.Uri.joinPath(distPathOnDisk, 'assets', 'index.css');
-	
-	// And get the special URI to use with the webview
-	const baseUri = webview.asWebviewUri(distPathOnDisk);
-	
-	return `<!DOCTYPE html>
-		<html lang="en">
-		<head>
-			<meta charset="UTF-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<title>React App</title>
-			<base href="${baseUri}/">
-		</head>
-		<body>
-			<div id="root"></div>
-			<script type="module" src="${baseUri}/assets/index.js"></script>
-			<link rel="stylesheet" href="${baseUri}/assets/index.css">
-		</body>
-		</html>`;
+class WebviewManager {
+	private static instance: WebviewManager;
+	private panel: vscode.WebviewPanel | undefined;
+	private readonly extensionUri: vscode.Uri;
+
+	private constructor(extensionUri: vscode.Uri) {
+		this.extensionUri = extensionUri;
+	}
+
+	static getInstance(extensionUri: vscode.Uri): WebviewManager {
+		if (!WebviewManager.instance) {
+			WebviewManager.instance = new WebviewManager(extensionUri);
+		}
+		return WebviewManager.instance;
+	}
+
+	private getWebviewContent(webview: vscode.Webview): string {
+		const distPathOnDisk = vscode.Uri.joinPath(this.extensionUri, 'dist', 'client');
+		const baseUri = webview.asWebviewUri(distPathOnDisk);
+		
+		return `<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<title>React App</title>
+				<base href="${baseUri}/">
+			</head>
+			<body>
+				<div id="root"></div>
+				<script type="module" src="${baseUri}/assets/index.js"></script>
+				<link rel="stylesheet" href="${baseUri}/assets/index.css">
+			</body>
+			</html>`;
+	}
+
+	public showWebview() {
+		if (this.panel) {
+			// If panel exists, show it
+			this.panel.reveal(vscode.ViewColumn.One);
+			return;
+		}
+
+		// Create new panel
+		this.panel = vscode.window.createWebviewPanel(
+			'reactWebview',
+			'React Webview',
+			vscode.ViewColumn.One,
+			{
+				enableScripts: true,
+				retainContextWhenHidden: true, // Keep the webview state when hidden
+				localResourceRoots: [
+					vscode.Uri.joinPath(this.extensionUri, 'dist', 'client'),
+					vscode.Uri.joinPath(this.extensionUri, 'dist')
+				]
+			}
+		);
+
+		// Set initial HTML content
+		this.panel.webview.html = this.getWebviewContent(this.panel.webview);
+
+		// Handle messages from webview
+		this.panel.webview.onDidReceiveMessage(
+			message => {
+				switch (message.command) {
+					case 'alert':
+						vscode.window.showInformationMessage(message.text);
+						return;
+					// Add more message handlers here
+				}
+			}
+		);
+
+		// Reset panel reference when panel is disposed
+		this.panel.onDidDispose(
+			() => {
+				this.panel = undefined;
+			}
+		);
+	}
+
+	public postMessageToWebview(message: any) {
+		if (this.panel) {
+			this.panel.webview.postMessage(message);
+		}
+	}
 }
 
 // This method is called when your extension is activated
@@ -35,46 +96,10 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Extension "test-extension" is now active!');
 
-	let currentPanel: vscode.WebviewPanel | undefined = undefined;
+	const webviewManager = WebviewManager.getInstance(context.extensionUri);
 
-	const disposable = vscode.commands.registerCommand('test-extension.openWebview', () => {
-		// If we already have a panel, show it
-		if (currentPanel) {
-			currentPanel.reveal(vscode.ViewColumn.One);
-			return;
-		}
-
-		// Otherwise, create a new panel
-		currentPanel = vscode.window.createWebviewPanel(
-			'reactWebview',
-			'React Webview',
-			vscode.ViewColumn.One,
-			{
-				enableScripts: true,
-				localResourceRoots: [
-					vscode.Uri.joinPath(context.extensionUri, 'dist', 'client'),
-					vscode.Uri.joinPath(context.extensionUri, 'dist')
-				],
-				portMapping: [
-					{
-						webviewPort: 3000,
-						extensionHostPort: 3000
-					}
-				]
-			}
-		);
-
-		// Set the webview's HTML content
-		currentPanel.webview.html = getWebviewContent(currentPanel.webview, context.extensionUri);
-
-		// Reset when the current panel is closed
-		currentPanel.onDidDispose(
-			() => {
-				currentPanel = undefined;
-			},
-			null,
-			context.subscriptions
-		);
+	let disposable = vscode.commands.registerCommand('test-extension.openWebview', () => {
+		webviewManager.showWebview();
 	});
 
 	context.subscriptions.push(disposable);
