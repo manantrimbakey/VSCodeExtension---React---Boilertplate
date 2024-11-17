@@ -16,6 +16,10 @@
       {
         "command": "test-extension.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "test-extension.openWebview",
+        "title": "Open React Webview"
       }
     ]
   },
