@@ -54,6 +54,12 @@ export function activate(context: vscode.ExtensionContext) {
 				localResourceRoots: [
 					vscode.Uri.joinPath(context.extensionUri, 'dist', 'client'),
 					vscode.Uri.joinPath(context.extensionUri, 'dist')
+				],
+				portMapping: [
+					{
+						webviewPort: 3000,
+						extensionHostPort: 3000
+					}
 				]
 			}
 		);
