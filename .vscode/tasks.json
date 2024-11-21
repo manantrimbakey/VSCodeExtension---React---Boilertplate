@@ -4,37 +4,29 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "watch",
-			"problemMatcher": "$ts-webpack-watch",
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never",
-				"group": "watchers"
+			"label": "watch-client",
+			"type": "shell",
+			"command": "pnpm",
+			"args": ["run", "watch"],
+			"options": {
+				"cwd": "${workspaceFolder}/src/client"
 			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
+			"isBackground": true,
+			"problemMatcher": {
+				"pattern": {
+					"regexp": "^$"
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": ".",
+					"endsPattern": "."
+				}
 			}
 		},
 		{
-			"type": "npm",
-			"script": "watch-tests",
-			"problemMatcher": "$tsc-watch",
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never",
-				"group": "watchers"
-			},
-			"group": "build"
-		},
-		{
-			"label": "tasks: watch-tests",
-			"dependsOn": [
-				"npm: watch",
-				"npm: watch-tests"
-			],
-			"problemMatcher": []
+			"label": "watch-client-and-extension",
+			"dependsOn": ["watch-client"],
+			"dependsOrder": "parallel"
 		}
 	]
 }
