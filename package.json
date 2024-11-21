@@ -1,7 +1,7 @@
 {
-  "name": "salesforce-debug-logs-viewer",
-  "displayName": "Salesforce Debug Logs Viewer",
-  "description": "View Salesforce Debug Logs",
+  "name": "vscode-extension-template",
+  "displayName": "VSCode Extension Template",
+  "description": "A template for building VSCode extensions",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.95.0"
@@ -14,15 +14,15 @@
   "contributes": {
     "commands": [
       {
-        "command": "salesforce-debug-logs-viewer.openWebview",
+        "command": "vscode-extension-template.openWebview",
         "title": "Open React Webview",
-        "category": "Salesforce Debug Logs Viewer"
+        "category": "VSCode Extension Template"
       }
     ],
     "configuration": {
-      "title": "Salesforce Debug Logs Viewer",
+      "title": "VSCode Extension Template",
       "properties": {
-        "salesforce-debug-logs-viewer.debugMode": {
+        "vscode-extension-template.debugMode": {
           "type": "boolean",
           "default": false,
           "description": "Enable debug mode for additional logging"

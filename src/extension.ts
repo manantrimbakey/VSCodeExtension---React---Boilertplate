@@ -9,7 +9,7 @@ import { logger } from "./utils/logger";
 // Your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
 	let port = 4000;
-	logger.info('Extension "salesforce-debug-logs-viewer" is now active!');
+	logger.info('Extension "vscode-extension-template" is now active!');
 	
 	try {
 		port = await startServer(port);
@@ -21,7 +21,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const webviewManager = WebviewManager.getInstance(context.extensionUri);
 
-	let disposable = vscode.commands.registerCommand("salesforce-debug-logs-viewer.openWebview", () => {
+	let disposable = vscode.commands.registerCommand("vscode-extension-template.openWebview", () => {
 		logger.debug("Opening webview");
 		webviewManager.showWebview({ port });
 	});
