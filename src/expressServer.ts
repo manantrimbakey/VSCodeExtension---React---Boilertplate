@@ -1,6 +1,7 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
+import { logger } from "./utils/logger";
 
 const app: Express = express();
 
@@ -48,11 +49,11 @@ const startServer = async (initialPort: number): Promise<number> => {
 		const isPortAvailable = await tryPort(currentPort);
 		if (isPortAvailable) {
 			server = app.listen(currentPort, () => {
-				console.log(`Server is running on port ${currentPort}`);
+				logger.info(`Server is running on port ${currentPort}`);
 			});
 			break;
 		} else {
-			console.log(`Port ${currentPort} is in use, trying ${currentPort + 1}`);
+			logger.info(`Port ${currentPort} is in use, trying ${currentPort + 1}`);
 			currentPort++;
 		}
 	}

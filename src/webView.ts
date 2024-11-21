@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { logger } from "./utils/logger";
+import { shutdownServer } from "./expressServer";
 class WebviewManager {
 	private static instance: WebviewManager;
 	private panel: vscode.WebviewPanel | undefined;
@@ -77,6 +78,7 @@ class WebviewManager {
 
 		// Reset panel reference when panel is disposed
 		this.panel.onDidDispose(() => {
+			shutdownServer();
 			this.panel = undefined;
 		});
 	}
